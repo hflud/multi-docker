@@ -1,0 +1,20 @@
+sudo: required
+services: 
+  - docker
+
+before_install:
+  - docker build -t huyennbl/react-tests -f ./client/Dockerfile.dev ./client
+
+script: 
+  - docker run huyennbl/react-tests npm test -- --coverage
+
+after_success
+  - docker build -t huyennbl/multi-client ./client
+  - docker build -t huyennbl/multi-server ./server
+  - docker build -t huyennbl/multi-nginx ./nginx
+  - docker build -t huyennbl/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push huyennbl/multi-client
+  - docker push huyennbl/multi-server
+  - docker push huyennbl/multi-nginx
+  - docker push huyennbl/multi-worker
